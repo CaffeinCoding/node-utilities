@@ -139,7 +139,16 @@ npm start image -- --input "C:/Users/user/images/*.jpg" --format "png"
 # 이미지 확장자 변환 (출력 폴더 지정)
 npm start image -- --input "./photo.jpg" --format "webp" --output "./converted"
 
+# SVG를 PNG/WebP/JPG로 변환 (기본 크기: 48x48)
+npm start image -- --input "./icon.svg" --format "png"
+npm start image -- --input "./icons/*.svg" --format "webp"
+
+# SVG를 지정 크기로 변환
+npm start image -- --input "./icon.svg" --format "png" --size "100x100"
+npm start image -- --input "./icon.svg" --format "png" --size "64"  # 64x64
+
 # 지원 형식: jpg, jpeg, png, webp, gif, bmp, tiff
+# SVG 변환: SVG → PNG, WebP, JPG (기본 크기: 48x48)
 # 크로스 플랫폼 경로 지원 (Windows, Linux, macOS)
 # 참고: npm start 사용 시 옵션 앞에 -- 를 추가하세요
 ```
@@ -187,6 +196,7 @@ npm run watch
 - ✅ 진법 변환 (10진수 ↔ 16진수)
 - ✅ 색상 코드 변환 (Hex → RGB)
 - ✅ 이미지 확장자 변환 (jpg, png, webp, gif, bmp, tiff)
+- ✅ SVG 변환 (SVG → PNG, WebP, JPG, 기본 크기: 48x48, 크기 지정 가능)
 
 ## 라이선스
 

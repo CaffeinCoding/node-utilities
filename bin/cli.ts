@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import * as path from 'path';
 import * as textUtils from '../lib/text';
 import * as hashUtils from '../lib/hash';
 import * as encodeUtils from '../lib/encode';
@@ -179,11 +180,12 @@ program
 // 이미지 변환 명령어
 program
   .command('image')
-  .description('이미지 확장자 변환 유틸리티 (단일 파일 또는 glob 패턴 지원)')
+  .description('이미지 확장자 변환 유틸리티 (단일 파일 또는 glob 패턴 지원, SVG 변환 지원)')
   .requiredOption('-i, --input <path>', '입력 이미지 파일 경로 또는 glob 패턴 (예: ./images/*.jpg)')
   .requiredOption('-f, --format <format>', '출력 이미지 형식 (jpg, png, webp, gif, bmp, tiff)')
   .option('-o, --output <dir>', '출력 디렉토리 (기본값: ./output)')
-  .action(async (options: { input: string; format: string; output?: string }) => {
+  .option('-s, --size <size>', '이미지 크기 (예: 100x100, SVG의 경우 기본값: 48x48)')
+  .action(async (options: { input: string; format: string; output?: string; size?: string }) => {
     try {
       // Windows CMD에서 백슬래시가 이스케이프되어 올 수 있으므로 정규화
       let inputPath = options.input;
@@ -207,6 +209,20 @@ program
         console.log(chalk.yellow('\n지원 형식: jpg, png, webp, gif, bmp, tiff'));
         process.exit(1);
       }
+
+      // 크기 파싱 (예: "100x100" 또는 "100")
+      let width: number | undefined;
+      let height: number | undefined;
+      if (options.size) {
+        const sizeMatch = options.size.match(/^(\d+)(?:x(\d+))?$/i);
+        if (sizeMatch) {
+          width = parseInt(sizeMatch[1]);
+          height = sizeMatch[2] ? parseInt(sizeMatch[2]) : width; // 높이가 없으면 너비와 동일
+        } else {
+          console.log(chalk.red('✗ 오류: 크기 형식이 올바르지 않습니다. (예: 100x100 또는 100)'));
+          process.exit(1);
+        }
+      }
       
       // glob 패턴인지 확인 (* 또는 ? 포함 여부)
       const isGlobPattern = inputPath.includes('*') || inputPath.includes('?') || inputPath.includes('[');
@@ -216,7 +232,9 @@ program
         const results = await imageUtils.convertImages({
           inputPath: inputPath,
           outputFormat: options.format,
-          outputDir: options.output
+          outputDir: options.output,
+          width: width,
+          height: height
         });
 
         const successCount = results.filter(r => r.success).length;
@@ -248,9 +266,22 @@ program
         const outputPath = await imageUtils.convertImage({
           inputPath: inputPath,
           outputFormat: options.format,
-          outputDir: options.output
+          outputDir: options.output,
+          width: width,
+          height: height
         });
-        console.log(chalk.green(`✓ 이미지 변환 완료: ${outputPath}`));
+        
+        // 크기 정보 표시 (SVG인 경우)
+        const inputExt = path.extname(inputPath).toLowerCase().slice(1);
+        if (inputExt === 'svg' && (width || height)) {
+          const finalWidth = width || 48;
+          const finalHeight = height || 48;
+          console.log(chalk.green(`✓ 이미지 변환 완료: ${outputPath} (크기: ${finalWidth}x${finalHeight})`));
+        } else if (inputExt === 'svg') {
+          console.log(chalk.green(`✓ 이미지 변환 완료: ${outputPath} (크기: 48x48, 기본값)`));
+        } else {
+          console.log(chalk.green(`✓ 이미지 변환 완료: ${outputPath}`));
+        }
       }
     } catch (error) {
       console.log(chalk.red(`✗ 오류: ${error instanceof Error ? error.message : String(error)}`));

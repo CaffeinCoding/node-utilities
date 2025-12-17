@@ -11,6 +11,8 @@ export interface ConvertOptions {
   inputPath: string;
   outputFormat: string;
   outputDir?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ConvertResult {
@@ -26,7 +28,7 @@ const supportedFormats = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 's
  * 단일 이미지 파일 변환
  */
 export async function convertImage(options: ConvertOptions): Promise<string> {
-  const { inputPath, outputFormat, outputDir } = options;
+  const { inputPath, outputFormat, outputDir, width, height } = options;
 
   // 입력 파일 존재 확인
   if (!fs.existsSync(inputPath)) {
@@ -35,7 +37,7 @@ export async function convertImage(options: ConvertOptions): Promise<string> {
 
   // 입력 파일 확장자 확인
   const inputExt = path.extname(inputPath).toLowerCase().slice(1);
-  
+
   if (!supportedFormats.includes(inputExt)) {
     throw new Error(`지원하지 않는 이미지 형식입니다: ${inputExt}`);
   }
@@ -44,6 +46,14 @@ export async function convertImage(options: ConvertOptions): Promise<string> {
   const normalizedOutputFormat = outputFormat.toLowerCase();
   if (!supportedFormats.includes(normalizedOutputFormat)) {
     throw new Error(`지원하지 않는 출력 형식입니다: ${normalizedOutputFormat}`);
+  }
+
+  // SVG는 png, webp, jpg만 지원
+  if (inputExt === 'svg') {
+    const svgOutputFormats = ['png', 'webp', 'jpg', 'jpeg'];
+    if (!svgOutputFormats.includes(normalizedOutputFormat)) {
+      throw new Error(`SVG는 ${svgOutputFormats.join(', ')} 형식으로만 변환할 수 있습니다.`);
+    }
   }
 
   // 출력 디렉토리 결정
@@ -68,7 +78,24 @@ export async function convertImage(options: ConvertOptions): Promise<string> {
 
   // 이미지 변환
   try {
-    await sharp(inputPath)
+    let sharpInstance = sharp(inputPath);
+
+    // SVG인 경우 크기 조정 (기본값 48x48 또는 지정된 크기)
+    if (inputExt === 'svg') {
+      const targetWidth = width || 48;
+      const targetHeight = height || 48;
+      sharpInstance = sharpInstance.resize(targetWidth, targetHeight, {
+        fit: 'contain',
+        background: { r: 255, g: 255, b: 255, alpha: 0 } // 투명 배경
+      });
+    } else if (width || height) {
+      // 다른 형식도 크기 지정이 있으면 조정
+      sharpInstance = sharpInstance.resize(width, height, {
+        fit: 'contain'
+      });
+    }
+
+    await sharpInstance
       .toFormat(normalizedOutputFormat as any)
       .toFile(outputPath);
 
@@ -82,7 +109,7 @@ export async function convertImage(options: ConvertOptions): Promise<string> {
  * glob 패턴을 사용하여 여러 이미지 파일 변환
  */
 export async function convertImages(options: ConvertOptions): Promise<ConvertResult[]> {
-  const { inputPath, outputFormat, outputDir } = options;
+  const { inputPath, outputFormat, outputDir, width, height } = options;
 
   // 출력 형식 검증
   const normalizedOutputFormat = outputFormat.toLowerCase();
@@ -96,10 +123,10 @@ export async function convertImages(options: ConvertOptions): Promise<ConvertRes
     // 크로스 플랫폼 경로 지원을 위해 경로 정규화
     // Windows 경로 구분자를 Unix 스타일로 변환 (glob 라이브러리는 Unix 스타일을 선호)
     let normalizedPath = inputPath.replace(/\\/g, '/');
-    
+
     // 절대 경로인 경우 처리
     const isAbsolute = path.isAbsolute(inputPath);
-    
+
     if (isAbsolute) {
       // 절대 경로인 경우, glob이 절대 경로를 직접 처리하도록 함
       // Windows 드라이브 문자를 포함한 절대 경로 처리
@@ -113,7 +140,7 @@ export async function convertImages(options: ConvertOptions): Promise<ConvertRes
         absolute: false
       });
     }
-    
+
     // 결과 경로를 현재 플랫폼에 맞게 정규화
     matchedFiles = matchedFiles.map(file => {
       // glob 결과가 이미 절대 경로인 경우 그대로 사용, 아니면 정규화
@@ -172,6 +199,20 @@ export async function convertImages(options: ConvertOptions): Promise<ConvertRes
       continue;
     }
 
+    // SVG는 png, webp, jpg만 지원
+    if (inputExt === 'svg') {
+      const svgOutputFormats = ['png', 'webp', 'jpg', 'jpeg'];
+      if (!svgOutputFormats.includes(normalizedOutputFormat)) {
+        results.push({
+          inputPath: filePath,
+          outputPath: '',
+          success: false,
+          error: `SVG는 ${svgOutputFormats.join(', ')} 형식으로만 변환할 수 있습니다.`
+        });
+        continue;
+      }
+    }
+
     // 출력 파일명 생성
     const inputFileName = path.basename(filePath, path.extname(filePath));
     const outputFileName = `${inputFileName}.${normalizedOutputFormat}`;
@@ -179,7 +220,24 @@ export async function convertImages(options: ConvertOptions): Promise<ConvertRes
 
     // 이미지 변환
     try {
-      await sharp(filePath)
+      let sharpInstance = sharp(filePath);
+
+      // SVG인 경우 크기 조정 (기본값 48x48 또는 지정된 크기)
+      if (inputExt === 'svg') {
+        const targetWidth = width || 48;
+        const targetHeight = height || 48;
+        sharpInstance = sharpInstance.resize(targetWidth, targetHeight, {
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 0 } // 투명 배경
+        });
+      } else if (width || height) {
+        // 다른 형식도 크기 지정이 있으면 조정
+        sharpInstance = sharpInstance.resize(width, height, {
+          fit: 'contain'
+        });
+      }
+
+      await sharpInstance
         .toFormat(normalizedOutputFormat as any)
         .toFile(outputPath);
 

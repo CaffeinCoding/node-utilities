@@ -506,12 +506,41 @@ npm start image --input "./images/*.jpg" --format "png"
 #   ✗ ./images/corrupted.jpg: 이미지 변환 실패: [오류 메시지]
 ```
 
+### SVG 변환
+
+SVG 파일을 PNG, WebP, JPG 형식으로 변환할 수 있습니다. 기본 크기는 48x48이며, `--size` 옵션으로 크기를 지정할 수 있습니다.
+
+```bash
+# SVG를 PNG로 변환 (기본 크기: 48x48)
+npm start image -- --input "./icon.svg" --format "png"
+# 출력: ✓ 이미지 변환 완료: [경로]/output/icon.png (크기: 48x48, 기본값)
+
+# SVG를 지정 크기로 변환
+npm start image -- --input "./icon.svg" --format "png" --size "100x100"
+# 출력: ✓ 이미지 변환 완료: [경로]/output/icon.png (크기: 100x100)
+
+# 정사각형 크기 지정 (한 값만 입력하면 정사각형)
+npm start image -- --input "./icon.svg" --format "webp" --size "64"
+# 출력: ✓ 이미지 변환 완료: [경로]/output/icon.webp (크기: 64x64)
+
+# 여러 SVG 파일 일괄 변환
+npm start image -- --input "./icons/*.svg" --format "png" --size "128x128"
+node dist/bin/cli.js image --input "./icons/*.svg" --format "png" --size "128x128"
+```
+
+**SVG 변환 특징**:
+
+- SVG는 PNG, WebP, JPG 형식으로만 변환 가능
+- 기본 크기: 48x48 픽셀
+- 크기 형식: `100x100` (가로x세로) 또는 `100` (정사각형)
+- 투명 배경 유지 (PNG, WebP)
+
 ### 출력 폴더 지정
 
 출력 폴더를 직접 지정할 수 있습니다. 폴더가 없으면 자동으로 생성됩니다.
 
 ```bash
-npm start image --input "./photo.jpg" --format "png" --output "./converted"
+npm start image -- --input "./photo.jpg" --format "png" --output "./converted"
 # 출력: ✓ 이미지 변환 완료: [경로]/converted/photo.png
 
 util image --input "./image.png" --format "jpg" --output "./images/jpg"
@@ -528,6 +557,7 @@ util image --input "./image.png" --format "jpg" --output "./images/jpg"
 - **GIF**: `gif`
 - **BMP**: `bmp`
 - **TIFF**: `tiff`
+- **SVG**: `svg` (PNG, WebP, JPG로만 변환 가능, 기본 크기: 48x48)
 
 ### 파일명 규칙
 
@@ -538,16 +568,25 @@ util image --input "./image.png" --format "jpg" --output "./images/jpg"
 
 ```bash
 # JPG를 PNG로 변환
-npm start image --input "./photo.jpg" --format "png"
+npm start image -- --input "./photo.jpg" --format "png"
 
 # PNG를 WebP로 변환 (고품질, 작은 파일 크기)
-npm start image --input "./image.png" --format "webp" --output "./webp_images"
+npm start image -- --input "./image.png" --format "webp" --output "./webp_images"
 
 # GIF를 PNG로 변환
-npm start image --input "./animation.gif" --format "png"
+npm start image -- --input "./animation.gif" --format "png"
 
 # BMP를 JPEG로 변환
-npm start image --input "./bitmap.bmp" --format "jpg"
+npm start image -- --input "./bitmap.bmp" --format "jpg"
+
+# SVG를 PNG로 변환 (기본 크기: 48x48)
+npm start image -- --input "./icon.svg" --format "png"
+
+# SVG를 WebP로 변환 (지정 크기: 128x128)
+npm start image -- --input "./icon.svg" --format "webp" --size "128x128"
+
+# 여러 SVG 파일을 일괄 변환
+npm start image -- --input "./icons/*.svg" --format "png" --size "64"
 ```
 
 ### 오류 처리

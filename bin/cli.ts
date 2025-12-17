@@ -3,13 +3,13 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
-import * as textUtils from '../lib/text';
-import * as hashUtils from '../lib/hash';
-import * as encodeUtils from '../lib/encode';
-import * as jsonUtils from '../lib/json';
-import * as dateUtils from '../lib/date';
-import * as miscUtils from '../lib/misc';
-import * as imageUtils from '../lib/image';
+import * as textUtils from '../lib/text.js';
+import * as hashUtils from '../lib/hash.js';
+import * as encodeUtils from '../lib/encode.js';
+import * as jsonUtils from '../lib/json.js';
+import * as dateUtils from '../lib/date.js';
+import * as miscUtils from '../lib/misc.js';
+import * as imageUtils from '../lib/image.js';
 
 const program = new Command();
 
@@ -66,10 +66,10 @@ program
 program
   .command('encode')
   .description('인코딩/디코딩 유틸리티')
-  .option('-b64e, --base64-encode <text>', 'Base64 인코딩')
-  .option('-b64d, --base64-decode <text>', 'Base64 디코딩')
-  .option('-ue, --url-encode <text>', 'URL 인코딩')
-  .option('-ud, --url-decode <text>', 'URL 디코딩')
+  .option('--base64-encode <text>', 'Base64 인코딩')
+  .option('--base64-decode <text>', 'Base64 디코딩')
+  .option('--url-encode <text>', 'URL 인코딩')
+  .option('--url-decode <text>', 'URL 디코딩')
   .action((options: { base64Encode?: string; base64Decode?: string; urlEncode?: string; urlDecode?: string }) => {
     if (options.base64Encode) {
       console.log(chalk.green(`Base64: ${encodeUtils.base64Encode(options.base64Encode)}`));

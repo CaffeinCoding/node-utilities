@@ -1,4 +1,4 @@
-# Web Utility
+# Node Utilities
 
 다양한 유틸리티를 제공하는 Node.js 기반 터미널 프로그램입니다. TypeScript로 작성되었습니다.
 

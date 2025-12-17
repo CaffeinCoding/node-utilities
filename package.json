@@ -1,5 +1,5 @@
 {
-  "name": "web-utility",
+  "name": "node-utilities",
   "version": "1.0.0",
   "description": "다양한 유틸리티를 제공하는 Node.js 기반 터미널 프로그램",
   "main": "dist/bin/cli.js",
@@ -33,4 +33,3 @@
     "typescript": "^5.3.3"
   }
 }
-
